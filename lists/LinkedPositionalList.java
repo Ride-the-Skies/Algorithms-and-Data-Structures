@@ -2,19 +2,19 @@ package lists;
 import java.util.Iterator;
 import utility.Position;
 
-public class LinkedPositionalList<E> implements PositionalList<E>, Iterable<E> {
+public class LinkedPositionalList<E> implements PositionalList<E>, Iterable<Position<E>> {
 	/** A static nested class for encapsulation of the list nodes of the linked list. */
 	private static class LN<E> implements Position<E> {
 		private LN() {}
-		private LN(E element) {this.element = element;} 
+		private LN(E data) {this.data = data;} 
 		
-		private LN(E element, LN<E> prev, LN<E> next) {
-			this.element = element;
+		private LN(E data, LN<E> prev, LN<E> next) {
+			this.data = data;
 			this.prev = prev; prev.next = this;
 			this.next = next; next.prev = this;
 		}
 		
-		public E element() {return element;}
+		public E data() {return data;}
 		public LN<E> prev() {return prev;}
 		public LN<E> next() {return next;}
 		
@@ -23,9 +23,11 @@ public class LinkedPositionalList<E> implements PositionalList<E>, Iterable<E> {
 			this.next = next; next.prev = this;
 		}
 		
-		public String toString() {return element.toString();}
+		public String toString() {
+			return data.toString();
+		}
 		
-		private E element;
+		private E data;
 		private LN<E> prev;
 		private LN<E> next;
 	}
@@ -38,19 +40,20 @@ public class LinkedPositionalList<E> implements PositionalList<E>, Iterable<E> {
 		trailer.prev = header;
 	}
 	
-	public int size() {return size;}
-	public boolean isEmpty() {return size == 0;}
+	public int size() {
+		return size;
+	}
+	
+	public boolean isEmpty() {
+		return size() == 0;
+	}
 	
 	public Position<E> first() {
-		if (isEmpty())
-			return null;
-		else return header.next();
+		return isEmpty() ? null : header.next();
 	}
 
 	public Position<E> last() {
-		if (isEmpty())
-			return null;
-		else return trailer.prev();
+		return isEmpty() ? null : trailer.prev();
 	}
 	
 	public Position<E> before(Position<E> p) throws IllegalArgumentException {
@@ -117,8 +120,8 @@ public class LinkedPositionalList<E> implements PositionalList<E>, Iterable<E> {
 	public E set(Position<E> p, E e) throws IllegalArgumentException {
 		if (!isValid(p))
 			throw new IllegalArgumentException("The specified position is not valid.");
-		((LN<E>) p).element = e;
-		return p.element();
+		((LN<E>) p).data = e;
+		return p.data();
 	}
 	
 	public E remove(Position<E> p) throws IllegalArgumentException {
@@ -132,7 +135,7 @@ public class LinkedPositionalList<E> implements PositionalList<E>, Iterable<E> {
 		next.prev = prev;
 		toRemove.prev = toRemove.next = null;
 		--size;
-		return toRemove.element();
+		return toRemove.data();
 	}
 	
 	/** A position is valid if it is one of those containing an element in a LinkedPositionalList. */
@@ -146,39 +149,68 @@ public class LinkedPositionalList<E> implements PositionalList<E>, Iterable<E> {
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
 		for (LN<E> walk = header.next(); walk != trailer; walk = walk.next())
-			sb.append(walk.element.toString() + (walk.next() == trailer ? "" : " -> "));
+			sb.append(walk.toString() + (walk.next() == trailer ? "" : " -> "));
 		return sb.toString();
 	}
 	
-	/** Returns an iterator over the elements in the list, from front to back. */
-	public Iterator<E> iterator() {return new ListIterator(false);}
-	
-	/** Returns an iterable collection of the elements in the list, from back to front. */
-	public Iterable<E> reverse() {return new ReverseListIterable();}
-	
-	private class ReverseListIterable implements Iterable<E> {
-		public Iterator<E> iterator() {return new ListIterator(true);}
+	/** Returns an iterator over the positions in the list, from front to back. */
+	public Iterator<Position<E>> iterator() {
+		return new ListIterator(false);
 	}
 	
+	/** Returns an iterable collection of the positions in the list, from back to front. */
+	public Iterable<Position<E>> reverse() {
+		return new Iterable<Position<E>>() {
+			public Iterator<Position<E>> iterator() {
+				return new ListIterator(true);
+			}
+		};
+	}	
+	
 	/** Does not support removal of elements in the list. */
-	private class ListIterator implements Iterator<E> {
+	private class ListIterator implements Iterator<Position<E>> {
 		@SuppressWarnings("unchecked")
 		public ListIterator(boolean reverse) {
-			snapshot = (E[]) new Object[size];
+			snapshot = (Position<E>[]) new Position[size];
 			if (!reverse)
 				for (LN<E> walk = header.next(); walk != trailer; walk = walk.next())
-					snapshot[index++] = walk.element();
+					snapshot[index++] = walk;
 			else
 				for (LN<E> walk = trailer.prev(); walk != header; walk = walk.prev())
-					snapshot[index++] = walk.element();
+					snapshot[index++] = walk;
 			index = 0;
 		}
 		
 		public boolean hasNext() {return index < snapshot.length;}
-		public E next() {return snapshot[index++];}
+		public Position<E> next() {return snapshot[index++];}
 		
-		private E[] snapshot;
+		private Position<E>[] snapshot;
 		private int index;
+	}
+	
+	/** Returns an iteration over the elements in the list, from front to back. */
+	public Iterable<E> elements() {
+		return new Iterable<E>() {
+			public Iterator<E> iterator() {
+				return new ElementIterator(false);
+			}
+		};
+	}
+	
+	/** Returns an iteration over the elements in the list, from back to front. */
+	public Iterable<E> elementsReverse() {
+		return new Iterable<E>() {
+			public Iterator<E> iterator() {
+				return new ElementIterator(true);
+			}
+		};
+	}
+	
+	private class ElementIterator implements Iterator<E> {
+		public ElementIterator(boolean reverse) {iterator = new ListIterator(reverse);}
+		public boolean hasNext() {return iterator.hasNext();}
+		public E next() {return iterator.next().data();}
+		private ListIterator iterator;
 	}
 	
 	private LN<E> header;

@@ -34,20 +34,14 @@ public class LinkedList<E> implements Iterable<E> {
 		size = 1;
 	}
 	
-	/** Returns the element stored at the front of the list, or throws an IllegalStateException
-	 * if the list is empty.*/
+	/** Returns the element stored at the front of the list, or null if the list is empty. */
 	public E first() throws IllegalStateException {
-		if (isEmpty())
-			throw new IllegalStateException("list is empty.");
-		else return head.element();
+		return isEmpty() ? null : head.element();
 	}
 	
-	/** Returns the element stored at the back of the list, or throws an IllegalStateException
-	 * if the list is empty. */
+	/** Returns the element stored at the back of the list, or null if the list is empty. */
 	public E last() throws IllegalStateException {
-		if (isEmpty())
-			throw new IllegalStateException("list is empty.");
-		else return tail.element();
+		return isEmpty() ? null : tail.element();
 	}
 	
 	/** Adds a node with the given element to the front of the list. */
@@ -73,6 +67,39 @@ public class LinkedList<E> implements Iterable<E> {
 		++size;
 	}
 	
+	/** Returns and removes the first occurrence of the element if it exists in the list.
+	 * Leaves the list unchanged and returns null there is no such occurrence. */
+	public E remove(E toRemove) {
+		E removed = null;
+		if (size() == 0)
+			return removed;
+		else if (size() == 1)
+			if (head.element().equals(toRemove)) {
+				removed = head.element();
+				head = tail = null;
+				--size;
+			}
+			else return removed;
+		else if (head.element().equals(toRemove)) {
+			removed = head.element();
+			head = head.next();
+			--size;
+		}
+		else {
+			for (LN<E> walk = head; walk.next() != null; walk = walk.next()) {
+				if (walk.next().element().equals(toRemove)) {
+					if (tail == walk.next())
+						tail = walk;
+					removed = walk.next().element();
+					walk.next = walk.next().next();
+					--size;
+					break;
+				}
+			}
+		}
+		return removed;
+	}
+	
 	/** Removes the node at the front of the list and returns its element, if the list is not empty.
 	 * Otherwise, throws an IllegalStateException.
 	 */
@@ -88,32 +115,6 @@ public class LinkedList<E> implements Iterable<E> {
 		return toRemove.element();
 	}
 	
-	/** Removes the node at the back of the list and returns its element, if the list is not empty.
-	 * Otherwise, throws an IllegalStateException.
-	 * <b>NOTE:</b> Takes θ(n), because the list is singly linked, so the whole list must be traversed in order
-	 * for the tail to be re-referenced to the node right before the one to be removed.
-	 */
-	public E popBack() throws IllegalArgumentException {
-		if (isEmpty())
-			throw new IllegalStateException("list is empty");
-		
-		LN<E> toRemove;
-		if (size() == 1) {
-			toRemove = head;
-			head = tail = null;
-		}
-		else {
-			LN<E> walk = head;
-			while (walk.next() != tail)
-				walk = walk.next();
-			toRemove = walk.next();
-			tail = walk;
-			tail.setNext(null);
-		}
-		--size;
-		return toRemove.element();
-	}
-	
 	/** Returns the number of elements stored in the list. */
 	public int size() {
 		return size;
@@ -122,6 +123,26 @@ public class LinkedList<E> implements Iterable<E> {
 	/** Returns true if the list is empty, or false if it isn't. */
 	public boolean isEmpty() {
 		return size() == 0;
+	}
+	
+	/** Iteratively reverses the list. */
+	public void reverse() {
+		if (isEmpty() || size == 1)
+			return;
+		
+		tail = head;
+		LN<E> prev = head;
+		LN<E> current = head.next();
+		LN<E> next = head.next().next();
+		while (next != null) {
+			current.setNext(prev);
+			prev = current;
+			current = next;
+			next = next.next();
+		}
+		current.setNext(prev);
+		tail.setNext(null);
+		head = current;
 	}
 	
 	/** Returns a String representation of the list that, while somewhat clunky, emphasizes the linked nature of the data structure. */
@@ -167,8 +188,23 @@ public class LinkedList<E> implements Iterable<E> {
 		list.prepend(1);
 		list.append(6);
 		list.append(7);
+		
 		System.out.println(list.toString());
-		for (Integer i: list)
-			System.out.println(i);
+		
+		list.remove(1);
+		list.remove(7);
+		list.remove(4);
+		list.remove(2);
+		list.remove(6);
+		list.remove(3);
+		list.remove(4);
+		list.remove(5);
+		list.remove(0);
+		
+		list.prepend(1);
+		list.prepend(2);
+		
+		System.out.println(list.toString());
+		System.out.println(list.size());
 	}
 }
