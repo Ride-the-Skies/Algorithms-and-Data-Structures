@@ -178,7 +178,7 @@ public class EdgeListGraph<V,E> implements Graph<V,E> {
 		return edges.last().data();
 	}
 
-	public void removeVertex(Vertex<V> v) {
+	public void removeVertex(Vertex<V> v) throws ClassCastException {
 		for (Edge<V,E> edge: edges())
 			if (edge.alpha() == v || edge.beta() == v)
 				edges.remove(((EdgeListEdge<V,E>)edge).position());
