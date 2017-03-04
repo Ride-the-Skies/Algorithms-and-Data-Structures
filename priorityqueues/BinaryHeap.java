@@ -111,24 +111,24 @@ public class BinaryHeap<K,V> implements PriorityQueue<K,V> {
 		entries[indexAlpha] = entries[indexBeta];
 		entries[indexBeta] = temp;
 	}
+	
+	public void print() {
+		print(0, "");
+	}
+	
+	private void print(int index, String buffer) {
+		if (hasRight(index))
+			print(right(index), buffer + "---");
+		System.out.println(buffer + entries[index].toString());
+		if (hasLeft(index))
+			print(left(index), buffer + "---");
+	}
 
 	private static int left(int indexParent) {return 2 * indexParent + 1;}
 	private static int right(int indexParent) {return 2 * indexParent + 2;}
 	private static int parent(int indexChild) {return (indexChild - 1) / 2;}
 	private boolean hasLeft(int indexParent) {return left(indexParent) < size();}
 	private boolean hasRight(int indexParent) {return right(indexParent) < size();}
-
-	public void prettyPrint() {
-		prettyPrint(0, "");
-	}
-	
-	private void prettyPrint(int index, String buffer) {
-		if (hasRight(index))
-			prettyPrint(right(index), buffer + "---");
-		System.out.println(buffer + entries[index].toString());
-		if (hasLeft(index))
-			prettyPrint(left(index), buffer + "---");
-	}
 	
 	private Entry<K,V>[] entries;
 	private Comparator<? super K> comparator;
@@ -138,7 +138,7 @@ public class BinaryHeap<K,V> implements PriorityQueue<K,V> {
 		BinaryHeap<Integer, Integer> heap = new BinaryHeap<>();
 		for (int i = 0; i < 32; ++i)
 			heap.push(i + 1, i + 1);
-		heap.prettyPrint();
+		heap.print();
 		System.out.println();
 		
 		while (!heap.isEmpty())
