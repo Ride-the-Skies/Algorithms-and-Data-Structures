@@ -12,6 +12,7 @@ public class EdgeListGraph<V,E> implements Graph<V,E> {
 		
 		public V element() {return element;}
 		public Position<Vertex<V>> position() {return position;}
+		public String toString() {return element.toString();}
 		
 		private final V element;
 		private final Position<Vertex<V>> position;
@@ -189,7 +190,72 @@ public class EdgeListGraph<V,E> implements Graph<V,E> {
 		edges.remove(((EdgeListEdge<V,E>)e).position());
 	}
 	
+	public String toString() {
+		StringBuilder sb = new StringBuilder("");
+		for (Vertex<V> vertex: vertices.elements()) {
+			sb.append(vertex.toString() + " -> {");
+			for (Edge<V,E> edge: outgoingEdges(vertex))
+				sb.append(edge.beta().toString() + ", ");
+			if (sb.charAt(sb.length() - 1) == ' ')
+				sb.delete(sb.length()-2, sb.length());
+			sb.append("}\n");
+		}
+		return sb.toString();
+	}
+	
 	private LinkedPositionalList<Vertex<V>> vertices;
 	private LinkedPositionalList<Edge<V,E>> edges;
 	private final boolean isDirected;
+	
+	public static void main(String[] args) {
+		Graph<String,String> g = new EdgeListGraph<>(true);
+		Vertex<String> one = g.insertVertex("一");
+		Vertex<String> two = g.insertVertex("二");
+		Vertex<String> three = g.insertVertex("三");
+		Vertex<String> four = g.insertVertex("四");
+		Vertex<String> five = g.insertVertex("五");
+		Vertex<String> six = g.insertVertex("六");
+		Vertex<String> seven = g.insertVertex("七");
+		Vertex<String> eight = g.insertVertex("八");
+		Vertex<String> nine = g.insertVertex("九");
+		Vertex<String> ten = g.insertVertex("十");
+		Vertex<String> eleven = g.insertVertex("十一");
+		Vertex<String> twelve = g.insertVertex("十二");
+		Vertex<String> thirteen = g.insertVertex("十三");
+		Vertex<String> fourteen = g.insertVertex("十四");
+		Vertex<String> fifteen = g.insertVertex("十五");
+	
+		g.insertEdge(one, three, "");
+		g.insertEdge(two, one, "");
+		g.insertEdge(three, two, "");
+		g.insertEdge(three, five, "");
+		g.insertEdge(four, one, "");
+		g.insertEdge(four, two, "");
+		g.insertEdge(four, twelve, "");
+		g.insertEdge(four, thirteen, "");
+		g.insertEdge(five, six, "");
+		g.insertEdge(five, eight, "");
+		g.insertEdge(six, seven, "");
+		g.insertEdge(six, eight, "");
+		g.insertEdge(six, ten, "");
+		g.insertEdge(seven, ten, "");
+		g.insertEdge(eight, nine, "");
+		g.insertEdge(eight, ten, "");
+		g.insertEdge(nine, five, "");
+		g.insertEdge(nine, eleven, "");
+		g.insertEdge(ten, nine, "");
+		g.insertEdge(ten, eleven, "");
+		g.insertEdge(ten, fourteen, "");
+		g.insertEdge(eleven, twelve, "");
+		g.insertEdge(eleven, fourteen, "");
+		g.insertEdge(twelve, thirteen, "");
+		g.insertEdge(thirteen, eleven, "");
+		g.insertEdge(thirteen, fifteen, "");
+		g.insertEdge(fourteen, thirteen, "");
+		g.insertEdge(fifteen, fourteen, "");
+		
+		System.out.println(g.toString());
+		System.out.println("numVertices: "+g.numVertices());
+		System.out.println("numEdges: "+g.numEdges()+"\n");
+	}
 }
