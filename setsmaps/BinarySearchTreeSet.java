@@ -62,6 +62,9 @@ public class BinarySearchTreeSet<E> extends AbstractSet<E> implements TreeSet<E>
 	}
 	
 	public boolean add(E toInsert) throws NullPointerException {
+		if (toInsert == null)
+			throw new NullPointerException("Null elements not allowed.");
+		
 		if (isEmpty()) {
 			setRoot(new TN<>(toInsert));
 			rebalanceInsertion(root());
