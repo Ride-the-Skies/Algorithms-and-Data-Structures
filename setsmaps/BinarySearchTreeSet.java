@@ -6,7 +6,7 @@ import java.util.Random;
 
 public class BinarySearchTreeSet<E> extends AbstractSet<E> implements TreeSet<E> {
 	// BEGINNING OF THE NESTED TREE NODE CLASS
-	protected static class TN<E> {
+	static class TN<E> {
 		TN(E element) {this.element = element;}
 		TN(E element, TN<E> left, TN<E> right) {
 			this.element = element;
