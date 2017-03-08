@@ -20,7 +20,7 @@ public class AVLTreeSet<E> extends BinarySearchTreeSet<E> {
 	void rebalanceInsertion(TN<E> justInserted) {
 		for (TN<E> walk = justInserted; walk != null; walk = walk.parent()) {
 			short previousHeight = height(walk);
-			adjustHeightAfterInsertion(walk);
+			adjustHeight(walk);
 			if (height(walk) == previousHeight && (walk.hasLeft() || walk.hasRight()))
 				return;
 			if (heightDiscrepancy(walk) > 1) {
@@ -35,7 +35,7 @@ public class AVLTreeSet<E> extends BinarySearchTreeSet<E> {
 	 * the root. */
 	void rebalanceDeletion(TN<E> parentDeleted) {
 		for (TN<E> walk = parentDeleted; walk != null; walk = walk.parent()) {
-			adjustHeightAfterDemotion(walk);
+			adjustHeight(walk);
 			if (heightDiscrepancy(walk) > 1)
 				findTrinode(walk);
 		}
@@ -43,7 +43,6 @@ public class AVLTreeSet<E> extends BinarySearchTreeSet<E> {
 	
 	/** <p>Selects node z as the root of the rotation. Then selects the child of z
 	 * with larger height as y, the child of z*. </p>
-	 * 
 	 *  
 	 *  <p> *There is always a child of z with a height that is greater than that
 	 *  of the other. </p> */
@@ -73,14 +72,14 @@ public class AVLTreeSet<E> extends BinarySearchTreeSet<E> {
 	 * operation. Ensures that the two nodes among this trio with the height that 
 	 * is lower than the third have their heights adjusted before that node. */
 	void adjustHeightsAfterRestructuring(TN<E> x, TN<E> y, TN<E> z) {
-		adjustHeightAfterDemotion(z);			
+		adjustHeight(z);			
 		if (x == y.left() || x == y.right()) {
-			adjustHeightAfterDemotion(x);
-			adjustHeightAfterDemotion(y);
+			adjustHeight(x);
+			adjustHeight(y);
 		}
 		else {
-			adjustHeightAfterDemotion(y);
-			adjustHeightAfterDemotion(x);	
+			adjustHeight(y);
+			adjustHeight(x);	
 		}
 	}
 	
@@ -105,18 +104,13 @@ public class AVLTreeSet<E> extends BinarySearchTreeSet<E> {
 		return heightTallestChild;
 	}
 	
-	private void adjustHeightAfterInsertion(TN<E> node) {
-		setHeight(node, (short) Math.max(height(node), heightTallestChild(node) + 1));
-	}
-	
-	private void adjustHeightAfterDemotion(TN<E> node) {
+	private void adjustHeight(TN<E> node) {
 		setHeight(node, (short) Math.max(0, heightTallestChild(node) + 1));
 	}
 	
 	public static void main(String[] args) {
 		AVLTreeSet<Integer> set = new AVLTreeSet<>();
-		for (int i = 0; i < 2047; ++i)
-			set.add(i + 1);
+		
 		set.print();
 	}
 }
