@@ -4,8 +4,10 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.Random;
 
+import lists.LinkedList;
+
 public class BinarySearchTreeSet<E> extends AbstractSet<E> implements TreeSet<E> {
-	// BEGINNING OF THE NESTED TREE NODE CLASS
+	// BEGINNING OF THE STATIC NESTED TREE NODE CLASS
 	static class TN<E> {
 		TN(E element) {this.element = element;}
 		TN(E element, TN<E> left, TN<E> right) {
@@ -20,11 +22,24 @@ public class BinarySearchTreeSet<E> extends AbstractSet<E> implements TreeSet<E>
 		TN<E> parent() {return parent;}
 		boolean hasLeft() {return left != null;}
 		boolean hasRight() {return right != null;}
-		int aux() {return aux;}
+		short aux() {return aux;}
 		int numChildren() {return hasLeft() ? hasRight() ? 2 : 1 : hasRight() ? 1 : 0;}
+		
+		Iterable<TN<E>> children() {
+			LinkedList<TN<E>> children = new LinkedList<>();
+			if (hasLeft())
+				children.append(left());
+			if (hasRight())
+				children.append(right());
+			return children;
+		}
 		
 		void setElement(E element) {
 			this.element = element;
+		}
+		
+		void setAux(short aux) {
+			this.aux = aux;
 		}
 		
 		void setLeft(TN<E> newLeft) {
@@ -43,8 +58,9 @@ public class BinarySearchTreeSet<E> extends AbstractSet<E> implements TreeSet<E>
 		TN<E> left, right, parent;
 		short aux;
 	}
+	// END OF THE STATIC NESTED TREE NODE CLASS
 	
-	// MEMBERS VISIBLE TO THE WORLD
+	
 	@SuppressWarnings("unchecked")
 	public BinarySearchTreeSet() throws ClassCastException {
 		this((a,b) -> ((Comparable<E>)a).compareTo(b));
@@ -56,7 +72,7 @@ public class BinarySearchTreeSet<E> extends AbstractSet<E> implements TreeSet<E>
 	
 	/** A convenience for testing. */
 	@SuppressWarnings("unchecked")
-	private void add(E... toInsert) {
+	void add(E... toInsert) {
 		for (E element: toInsert)
 			add(element);
 	}
@@ -104,62 +120,51 @@ public class BinarySearchTreeSet<E> extends AbstractSet<E> implements TreeSet<E>
 	public boolean remove(E toRemove) throws NullPointerException {
 		if (toRemove == null)
 			throw new NullPointerException("Null elements not allowed.");
-		else if (isEmpty())
+		TN<E> search = find(toRemove);
+		if (search == null || !search.element().equals(toRemove))
 			return false;
 		
-		TN<E> search = find(toRemove);
-		if (!search.element().equals(toRemove))
-			return false;
-		else {
-			TN<E> parentOfSearch = search.parent();
-			switch (search.numChildren()) {
-			case 0:
-				if (search == root()) {
-					setRoot(null);
-				}
-				else {
-					if (search == parentOfSearch.left())
-						parentOfSearch.setLeft(null);
-					else
-						parentOfSearch.setRight(null);
-					rebalanceDeletion(parentOfSearch);
-				}
-				break;
-			
-			case 1:
-				if (search == root()) {
-					if (search.hasLeft())
-						setRoot(search.left());
-					else
-						setRoot(search.right());
-					root.parent = null;
-					rebalanceDeletion(parentOfSearch);
-				}
-				else {
-					if (search == parentOfSearch.left())
-						parentOfSearch.setLeft(search.hasLeft() ? search.left() : search.right());
-					else
-						parentOfSearch.setRight(search.hasRight() ? search.right() : search.left());
-					rebalanceDeletion(parentOfSearch);
-				}
-				break;
-			
-			case 2:
-				TN<E> replacement = new Random().nextBoolean() ? 
-						largest(search.left()) : smallest(search.right());
-				search.setElement(replacement.element());
-				TN<E> parentOfReplacement = replacement.parent();
-				if (replacement == parentOfReplacement.left())
-					parentOfReplacement.setLeft(replacement.right());
+		TN<E> parentOfSearch = search.parent();
+		switch (search.numChildren()) {
+		case 0:
+			if (search == root())
+				setRoot(null);
+			else {
+				if (search == parentOfSearch.left())
+					parentOfSearch.setLeft(null);
 				else
-					parentOfReplacement.setRight(replacement.left());
-				rebalanceDeletion(parentOfReplacement);
-				break;
+					parentOfSearch.setRight(null);
+				rebalanceDeletion(parentOfSearch);
 			}
-			
-			--size;
-			return true;
+			break;
+		
+		case 1:
+			if (search == root()) {
+				setRoot(search.hasLeft() ? search.left() : search.right());
+				root.parent = null;
+			}
+			else {
+				if (search == parentOfSearch.left())
+					parentOfSearch.setLeft(search.hasLeft() ? search.left() : search.right());
+				else
+					parentOfSearch.setRight(search.hasRight() ? search.right() : search.left());
+				rebalanceDeletion(parentOfSearch);
+			}
+			break;
+		
+		case 2:
+			TN<E> replacement = new Random().nextBoolean() ? largest(search.left()) : smallest(search.right());
+			search.setElement(replacement.element());
+			TN<E> parentOfReplacement = replacement.parent();
+			if (replacement == parentOfReplacement.left())
+				parentOfReplacement.setLeft(replacement.right());
+			else
+				parentOfReplacement.setRight(replacement.left());
+			rebalanceDeletion(parentOfReplacement);
+			break;
 		}
+		--size;
+		return true;
 	}
 
 	public void retainAll(Collection<? extends E> collection) throws NullPointerException {
@@ -260,19 +265,9 @@ public class BinarySearchTreeSet<E> extends AbstractSet<E> implements TreeSet<E>
 	}
 	
 	void setRoot(TN<E> newRoot) {
-		this.root = newRoot;
-	}
-	
-	void rebalanceInsertion(TN<E> justInserted) {
-		// To be overriden by subclasses.
-	}
-	
-	void rebalanceDeletion(TN<E> parentOfDeletedNode) {
-		// To be overriden by subclasses.
-	}
-	
-	void rebalanceAccess(TN<E> justAccessed) {
-		// To be overriden by subclasses.
+		root = newRoot;
+		if (root != null)
+			root.parent = null;
 	}
 	
 	class BST_Iterator implements Iterator<E> {
@@ -298,6 +293,102 @@ public class BinarySearchTreeSet<E> extends AbstractSet<E> implements TreeSet<E>
 		private int index;
 	}
 	
+	// METHODS FOR SELF BALANCING SUBCLASSES
+	                                        
+	/*        B             A                                
+	 *       / \     ->    / \               
+	 *      A   γ         α   B                                
+	 *     / \               / \                         
+	 *    α   β             β   γ                         
+	 */
+	void rotateRight(TN<E> A, TN<E> B) throws IllegalArgumentException {
+		if (A != B.left())
+			throw new IllegalArgumentException("A is not a left child of B.");
+		if (B == root())
+			setRoot(A);
+		else
+			if (B == B.parent().left())
+				B.parent().setLeft(A);
+			else
+				B.parent().setRight(A);
+		B.setLeft(A.right());
+		A.setRight(B);
+	}
+	                                        
+	/*     A                  B             
+	 *    / \       ->       / \ 
+	 *   α   B              A   γ             
+	 *      / \            / \      
+	 *     β   γ          α   β             
+	 */
+	void rotateLeft(TN<E> A, TN<E> B) throws IllegalArgumentException {
+		if (B != A.right())
+			throw new IllegalArgumentException("B is not a right child of A.");
+		if (A == root())
+			setRoot(B);
+		else
+			if (A == A.parent().left())
+				A.parent().setLeft(B);
+			else
+				A.parent().setRight(B);
+		A.setRight(B.left());
+		B.setLeft(A);
+	}
+	
+	/*      z                          y  
+	 *     / \           ->          /   \
+	 *    t1  y                     z     x
+	 *       / \                   / \   / \                                              
+	 *      t2  x                 t1 t2 t3 t4   
+	 *         / \                    
+	 *        t3 t4                
+	 *                                 
+	 *     
+	 *          z                      y  
+	 *         / \       ->          /   \      
+	 *        y  t4                 x     z                        
+	 *       / \                   / \   / \                            
+	 *      x  t3                 t1 t2 t3 t4                           
+	 *     / \                                                         
+	 *    t1 t2                                                     
+	 *                                                             
+	 *                                                                
+	 *      z                          x                               
+	 *     / \           ->          /   \               
+	 *    t1  y                     z     y              
+	 *       / \                   / \   / \                  
+	 *      x  t4                 t1 t2 t3 t4                      
+	 *     / \                                                   
+	 *    t2 t3                                                   
+	 *                                                          
+	 *        z                        x                     
+	 *       / \        ->           /   \                      
+	 *      y  t4                   y     z                     
+	 *     / \                     / \   / \                    
+	 *    t1  x                   t1 t2 t3 t4                        
+	 *       / \                                                 
+	 *      t2 t3                                                                                                                         
+	 */
+	void restructureTrinode(TN<E> x, TN<E> y, TN<E> z) throws IllegalArgumentException {
+		if (y == z.right() && x == y.right())	// First drawing.
+			rotateLeft(z,y);
+		else if (y == z.left() && x == y.left())	// Second drawing.
+			rotateRight(y,z);
+		else if (y == z.right() && x == y.left()) {		// Third.
+			rotateRight(x,y);
+			rotateLeft(z,x);
+		}
+		else if (y == z.left() && x == y.right()) {		// Fourth.
+			rotateLeft(y,x);
+			rotateRight(x,z);
+		}
+		else throw new IllegalArgumentException("Either y is not a parent of x, z is not a parent of y, or both.");
+	}
+	
+	void rebalanceInsertion(TN<E> justInserted) {}
+	void rebalanceDeletion(TN<E> parentDeleted) {}
+	void rebalanceAccess(TN<E> justAccessed) {}
+	
 	// FIELDS
 	TN<E> root;
 	Comparator<? super E> comparator;
@@ -305,11 +396,11 @@ public class BinarySearchTreeSet<E> extends AbstractSet<E> implements TreeSet<E>
 	
 	
 	public static void main(String[] args) {
-		BinarySearchTreeSet<Integer> set = new BinarySearchTreeSet<>();
-		set.add(4,2,6,1,3,5,7);
+		BinarySearchTreeSet<Integer> set = new AVLTreeSet<>();
+		set.add(1,2,3);
 		set.print();
-		while (!set.isEmpty())
-			System.out.print((new Random().nextBoolean() ? set.pollFirst() : set.pollLast()) + " ");
 		System.out.println();
+		
+		System.out.print(set.root().left().aux() + " " + set.root().aux() + " " + set.root().right().aux());
 	}
 }
