@@ -2,10 +2,12 @@ package setsmaps;
 import java.util.Comparator;
 
 public class AVLTreeSet<E> extends BinarySearchTreeSet<E> {
+	/** Creates an empty AVL Tree Set with the default comparator. */
 	public AVLTreeSet() {
 		super();
 	}
 	
+	/** Creates an empty AVL Tree Set with the specified comparator. */
 	public AVLTreeSet(Comparator<? super E> comparator) {
 		super(comparator);
 	}
@@ -110,7 +112,7 @@ public class AVLTreeSet<E> extends BinarySearchTreeSet<E> {
 	
 	public static void main(String[] args) {
 		AVLTreeSet<Integer> set = new AVLTreeSet<>();
-		
+		set.add(33, 73, 14, 78, 96, 34, 1, 51, 18, 94, 24, 50, 31, 10, 5);
 		set.print();
 	}
 }

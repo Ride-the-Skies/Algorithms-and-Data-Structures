@@ -61,11 +61,13 @@ public class BinarySearchTreeSet<E> extends AbstractSet<E> implements TreeSet<E>
 	// END OF THE STATIC NESTED TREE NODE CLASS
 	
 	
+	/** Creates an empty Binary Search Tree Set with the default comparator. */
 	@SuppressWarnings("unchecked")
 	public BinarySearchTreeSet() throws ClassCastException {
 		this((a,b) -> ((Comparable<E>)a).compareTo(b));
 	}
 	
+	/** Creates an empty Binary Search Tree Set with the specified comparator. */
 	public BinarySearchTreeSet(Comparator<? super E> comparator) {
 		this.comparator = comparator;
 	}
@@ -114,7 +116,11 @@ public class BinarySearchTreeSet<E> extends AbstractSet<E> implements TreeSet<E>
 
 	public boolean contains(E element) throws NullPointerException {
 		TN<E> search = find(element);
-		return search != null && search.element().equals(element);
+		if (search != null) {
+			rebalanceAccess(search);
+			return search.element().equals(element);
+		}
+		else return false;
 	}
 
 	public boolean remove(E toRemove) throws NullPointerException {
