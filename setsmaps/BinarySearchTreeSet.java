@@ -126,51 +126,20 @@ public class BinarySearchTreeSet<E> extends AbstractSet<E> implements TreeSet<E>
 	public boolean remove(E toRemove) throws NullPointerException {
 		if (toRemove == null)
 			throw new NullPointerException("Null elements not allowed.");
+		
 		TN<E> search = find(toRemove);
 		if (search == null || !search.element().equals(toRemove))
 			return false;
-		
-		TN<E> parentOfSearch = search.parent();
-		switch (search.numChildren()) {
-		case 0:
-			if (search == root())
-				setRoot(null);
-			else {
-				if (search == parentOfSearch.left())
-					parentOfSearch.setLeft(null);
-				else
-					parentOfSearch.setRight(null);
-				rebalanceDeletion(parentOfSearch);
-			}
-			break;
-		
-		case 1:
-			if (search == root()) {
-				setRoot(search.hasLeft() ? search.left() : search.right());
-				root.parent = null;
-			}
-			else {
-				if (search == parentOfSearch.left())
-					parentOfSearch.setLeft(search.hasLeft() ? search.left() : search.right());
-				else
-					parentOfSearch.setRight(search.hasRight() ? search.right() : search.left());
-				rebalanceDeletion(parentOfSearch);
-			}
-			break;
-		
-		case 2:
-			TN<E> replacement = new Random().nextBoolean() ? largest(search.left()) : smallest(search.right());
-			search.setElement(replacement.element());
-			TN<E> parentOfReplacement = replacement.parent();
-			if (replacement == parentOfReplacement.left())
-				parentOfReplacement.setLeft(replacement.right());
-			else
-				parentOfReplacement.setRight(replacement.left());
-			rebalanceDeletion(parentOfReplacement);
-			break;
+		else {
+			if (!search.hasLeft() && !search.hasRight())
+				removeElementInNodeWithNoChildren(search);
+			else if (search.hasLeft() || search.hasRight())
+				removeElementInNodeWithOneChild(search);
+			else 
+				removeElementInNodeWithTwoChildren(search);
+			--size;
+			return true;
 		}
-		--size;
-		return true;
 	}
 
 	public void retainAll(Collection<? extends E> collection) throws NullPointerException {
@@ -274,6 +243,45 @@ public class BinarySearchTreeSet<E> extends AbstractSet<E> implements TreeSet<E>
 		root = newRoot;
 		if (root != null)
 			root.parent = null;
+	}
+	
+	private void removeElementInNodeWithNoChildren(TN<E> nodeWithNoChildren) {
+		TN<E> parent = nodeWithNoChildren.parent();
+		if (nodeWithNoChildren == root())
+			setRoot(null);
+		else {
+			if (nodeWithNoChildren == parent.left())
+				parent.setLeft(null);
+			else
+				parent.setRight(null);
+			rebalanceDeletion(parent);
+		}
+	}
+	
+	private void removeElementInNodeWithOneChild(TN<E> nodeWithOneChild) {
+		TN<E> parent = nodeWithOneChild.parent();
+		if (nodeWithOneChild == root()) {
+			setRoot(nodeWithOneChild.hasLeft() ? nodeWithOneChild.left() : nodeWithOneChild.right());
+			root.parent = null;
+		}
+		else {
+			if (nodeWithOneChild == parent.left())
+				parent.setLeft(nodeWithOneChild.hasLeft() ? nodeWithOneChild.left() : nodeWithOneChild.right()); // Can't have both.
+			else
+				parent.setRight(nodeWithOneChild.hasRight() ? nodeWithOneChild.right() : nodeWithOneChild.left());
+			rebalanceDeletion(parent);
+		}
+	}
+	
+	private void removeElementInNodeWithTwoChildren(TN<E> nodeWithTwoChildren) {
+		TN<E> replacement = new Random().nextBoolean() ? largest(nodeWithTwoChildren.left()) : smallest(nodeWithTwoChildren.right());
+		nodeWithTwoChildren.setElement(replacement.element());
+		TN<E> parentOfReplacement = replacement.parent();
+		if (replacement == parentOfReplacement.left())			// Replacement can have at most one child, and the setLeft and
+			parentOfReplacement.setLeft(replacement.right());	// setRight methods will do the right thing even if the replacement
+		else													// has no children.
+			parentOfReplacement.setRight(replacement.left());
+		rebalanceDeletion(parentOfReplacement);
 	}
 	
 	class BST_Iterator implements Iterator<E> {
@@ -403,10 +411,11 @@ public class BinarySearchTreeSet<E> extends AbstractSet<E> implements TreeSet<E>
 	
 	public static void main(String[] args) {
 		BinarySearchTreeSet<Integer> set = new AVLTreeSet<>();
-		set.add(1,2,3);
+		set.add(1,2,3,4,5,6,7);
 		set.print();
+		for (int i = 0; i < 5; ++i)
+			set.remove(i);
 		System.out.println();
-		
-		System.out.print(set.root().left().aux() + " " + set.root().aux() + " " + set.root().right().aux());
+		set.print();
 	}
 }
