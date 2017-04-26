@@ -3,9 +3,9 @@ import lists.*;
 import utility.*;
 
 public class EdgeListGraph<V,E> implements Graph<V,E> {
-	//////////////////////////////////////////////
-	// Beginning of inner EdgeListVertex class. //
-	//////////////////////////////////////////////
+	//////////////////////////////////////////////////
+	// Beginning of the inner EdgeListVertex class. //
+	//////////////////////////////////////////////////
 	private class EdgeListVertex implements Vertex<V> {
 		public EdgeListVertex(V element, Position<EdgeListVertex> position) {
 			this.element = element;
@@ -15,14 +15,16 @@ public class EdgeListGraph<V,E> implements Graph<V,E> {
 		public V element() {return element;}
 		public Position<EdgeListVertex> position() {return position;}
 		public EdgeListGraph<V,E> outer() {return EdgeListGraph.this;}
+		public int hashCode() {return element.hashCode();}
+		public boolean equals(Object other) {return other == this;}
 		
 		private final V element;
 		private final Position<EdgeListVertex> position;
 	}
 	
-	////////////////////////////////////////////
-	// Beginning of inner EdgeListEdge class. //
-	////////////////////////////////////////////
+	////////////////////////////////////////////////
+	// Beginning of the inner EdgeListEdge class. //
+	////////////////////////////////////////////////
 	
 	// An EdgeListEdge has member variables for each of its adjacent vertices. If the graph is directed, alpha
 	// refers to the incoming vertex, and beta returns to the outgoing one. If it is undirected, alpha and beta
@@ -40,15 +42,17 @@ public class EdgeListGraph<V,E> implements Graph<V,E> {
 		public Position<EdgeListEdge> position() {return position;}
 		public EdgeListVertex alpha() {return alpha;}
 		public EdgeListVertex beta() {return beta;}
+		public int hashCode() {return data.hashCode();}
+		public boolean equals(Object other) {return other == this;}
 		
 		private E data;
 		private final Position<EdgeListEdge> position;
 		private final EdgeListVertex alpha, beta;
 	}
 	
-	/////////////////////////////////////////////////////
-	// Beginning of encapsulating EdgeListGraph class. //
-	/////////////////////////////////////////////////////
+	/////////////////////////////////////////////////////////
+	// Beginning of the encapsulating EdgeListGraph class. //
+	/////////////////////////////////////////////////////////
 	public EdgeListGraph(boolean isDirected) {
 		vertices = new LinkedPositionalList<>();
 		edges = new LinkedPositionalList<>();
@@ -245,7 +249,7 @@ public class EdgeListGraph<V,E> implements Graph<V,E> {
 	private final boolean isDirected;
 	
 	public static void main(String[] args) {
-		Graph<String,String> g = new EdgeListGraph<>(false);
+		Graph<String,String> g = new EdgeListGraph<>(true);
 		Vertex<String> one = g.insertVertex("1");
 		Vertex<String> two = g.insertVertex("2");
 		Vertex<String> three = g.insertVertex("3");
